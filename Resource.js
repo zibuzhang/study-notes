@@ -7,13 +7,13 @@ import qs from 'qs';
 class Resource {
     /**
      * Resource类构造函数
-     * @param {String} url RESTful格式的请求地址（例如：http://localhost{/api}{/module}{/action}{/id}）
+     * @param {String} url RESTful格式的请求地址（默认值：__HOST__ + '{/api}{/module}{/action}{/id}'）
      * @param {String} contentType 发送形式，默认JSON（application/json、application/x-www-form-urlencoded）
      */
     constructor(url, contentType) {
         this.axiosInstance = null; // axios实例
         this.cancel = () => { }; // 取消ajax请求，在init中赋值
-        this.originalUrl = url;
+        this.originalUrl = url || __HOST__ + '{/api}{/module}{/action}{/id}'; // +运算符的优先级要比||运算符优先级高
         this.sections = []; // RESTful格式地址中动态部分
 
         this.init(contentType);
@@ -74,7 +74,11 @@ class Resource {
         // 因为str.match方法返回的结果只有匹配的内容，没有每一个匹配中正则表达式小括号内的内容
         // 所以使用reg.exec方法。
         while (reg.lastIndex < this.originalUrl.length) {
-            this.sections.push(reg.exec(this.originalUrl));
+            let section = reg.exec(this.originalUrl);
+            if (!section) {
+                break;
+            }
+            this.sections.push(section);
         }
     }
 
